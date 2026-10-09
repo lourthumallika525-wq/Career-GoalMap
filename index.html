@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Goalmap - Discover Your Career Path</title>
+    <!-- Google Fonts & Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #0F2C59;
+            --secondary: #173B6B;
+            --accent: #E5C07B;
+            --accent-hover: #d4ae65;
+            --bg-light: #F8FAFC;
+            --text-main: #334155;
+            --text-light: #64748B;
+            --white: #FFFFFF;
+            --border: #E2E8F0;
+            --success: #10B981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--primary);
+            color: var(--white);
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .logo-area h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .logo-area span {
+            color: var(--accent);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 3rem auto;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            padding: 2.5rem;
+            overflow: hidden;
+        }
+
+        /* Screen States */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Welcome Screen */
+        .welcome-content {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .welcome-content h2 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .welcome-content p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: var(--primary);
+            font-weight: 600;
+            padding: 0.8rem 2.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 2rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .step-indicator {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        /* Form Questionnaire Styles */
+        .question-block {
+            margin-bottom: 2rem;
+        }
+
+        .question-block h3 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .options-group {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary);
+            background: #F1F5F9;
+        }
+
+        .option-label input {
+            margin-right: 1rem;
+            accent-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .form-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2.5rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.7rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Results Report Styles */
+        .report-header {
+            text-align: center;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-header h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .report-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .report-section h3 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+            padding-left: 0.75rem;
+        }
+
+        .chart-container {
+            max-width: 500px;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .personality-card {
+            background: #F8FAFC;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .career-match-item {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .career-match-item h4 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .career-match-item p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 3rem;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            header, .action-buttons, .form-nav {
+                display: none !important;
+            }
+            .container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1>Career <span>Goalmap</span></h1>
+        </div>
+        <div style="font-size: 0.9rem; font-weight: 500;">Professional Assessment Portal</div>
+    </header>
+
+    <div class="container">
+
+        <!-- SCREEN 1: WELCOME SCREEN -->
+        <div id="welcome-screen" class="screen active">
+            <div class="welcome-content">
+                <h2>Discover Your True Career Path</h2>
+                <p>Take our multi-factor psychometric assessment evaluating your Orientation, Interests, Personality, and Aptitude to unlock your bespoke career trajectory.</p>
+                <button class="btn" onclick="startAssessment()">Start Assessment</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: MULTI-STEP QUESTIONNAIRE -->
+        <div id="assessment-screen" class="screen">
+            <div class="progress-container">
+                <div id="step-indicator" class="step-indicator">Section 1 of 4: Orientation Style</div>
+                <div class="progress-bar-bg">
+                    <div id="progress-fill" class="progress-bar-fill"></div>
+                </div>
+            </div>
+
+            <form id="assessment-form">
+                <!-- Dynamic Questions injected via JavaScript -->
+                <div id="question-container"></div>
+
+                <div class="form-nav">
+                    <button type="button" id="prev-btn" class="btn-secondary" onclick="prevStep()" style="visibility: hidden;">Previous</button>
+                    <button type="button" id="next-btn" class="btn" onclick="nextStep()">Next Section</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SCREEN 3: RESULTS & DASHBOARD REPORT -->
+        <div id="report-screen" class="screen">
+            <div class="report-header">
+                <h2>Your Personalized Career Report</h2>
+                <p style="color: var(--text-light); margin-top: 0.3rem;">Generated by Career Goalmap Intelligence Framework</p>
+            </div>
+
+            <!-- Orientation Summary -->
+            <div class="report-section">
+                <h3>1. Orientation Style Analysis</h3>
+                <p style="margin-bottom: 1rem; color: var(--text-light);">Your basic attitude and work orientation across administrative, creative, informative, and people-centric dimensions.</p>
+                <div class="chart-container">
+                    <canvas id="orientationChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Dominant Interests -->
+            <div class="report-section">
+                <h3>2. Top Career Interests</h3>
+                <div id="interest-results-list"></div>
+            </div>
+
+            <!-- Personality Match -->
+            <div class="report-section">
+                <h3>3. Personality & Behavioral Profile</h3>
+                <div class="personality-card" id="personality-match-box">
+                    <!-- Dynamic Personality Match Content -->
+                </div>
+            </div>
+
+            <!-- Top 5 Recommendations -->
+            <div class="report-section">
+                <h3>4. Top 5 Custom Career Recommendations</h3>
+                <div id="top-recommendations-list"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn" onclick="window.print()">Download / Print PDF Report</button>
+                <button class="btn-secondary" onclick="location.reload()">Retake Assessment</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const assessmentSections = [
+            {
+                title: "Section 1: Orientation Style",
+                subtitle: "Select the option that best reflects your natural working preference:",
+                questions: [
+                    {
+                        id: "ori_1",
+                        text: "When handling a brand-new project, what is your first instinct?",
+                        options: [
+                            { text: "Organize timelines, delegate responsibilities, and structure the workflow.", type: "Admin", score: 25 },
+                            { text: "Brainstorm unique, out-of-the-box conceptual designs and aesthetics.", type: "Creative", score: 25 },
+                            { text: "Research background data, read technical manuals, and analyze variables.", type: "Informative", score: 25 },
+                            { text: "Talk to team members to understand team dynamics and user needs.", type: "People", score: 25 }
+                        ]
+                    },
+                    {
+                        id: "ori_2",
+                        text: "Which environment do you thrive in the most?",
+                        options: [
+                            { text: "A structured management office with clear targets and deliverables.", type: "Admin", score: 25 },
+                            { text: "An expressive, artistic studio environment with creative freedom.", type: "Creative", score: 25 },
+                            { text: "A quiet intellectual space filled with research reports, books, and gadgets.", type: "Informative", score: 25 },
+                            { text: "A lively collaborative environment interacting directly with people.", type: "People", score: 25 }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Section 2: Core Interest Evaluation",
+                subtitle: "Rate your enthusiasm for the following professional fields:",
+                questions: [
+                    {
+                        id: "int_1",
+                        text: "How much do you enjoy teaching, mentoring, or explaining concepts to others?",
+                        options: [
+                            { text: "Extremely High (Love sharing knowledge & training)", field: "Education & Training", score: 100 },
+                            { text: "Moderate (Comfortable when required)", field: "Education & Training", score: 60 },
+                            { text: "Low (Prefer working independently)", field: "Education & Training", score: 30 }
+                        ]
+                    },
+                    {
+                        id: "int_2",
+                        text: "How fascinated are you by numbers, algorithms, data analytics, and statistical reasoning?",
+                        options: [
+                            { text: "Extremely High (Passionate about math & stats)", field: "Mathematics & Statistics", score: 95 },
+                            { text: "Moderate (Good with basic numbers)", field: "Mathematics & Statistics", score: 65 },
+                            { text: "Low (Avoid heavy numerical calculations)", field: "Mathematics & Statistics", score: 30 }
+                        ]
+                    },
+                    {
+                        id: "int_3",
+                        text: "How much do you lean toward persuasive communication, networking, and sales strategy?",
+                        options: [
+                            { text: "Extremely High (Love negotiation and closing deals)", field: "Sales", score: 90 },
+                            { text: "Moderate (Decent public speaker)", field: "Sales", score: 60 },
+                            { text: "Low (Prefer backend administrative work)", field: "Sales", score: 25 }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Section 3: Personality & Traits",
+                subtitle: "Choose the statement that describes you accurately:",
+                questions: [
+                    {
+                        id: "per_1",
+                        text: "How do you approach daily organization and tasks?",
+                        options: [
+                            { text: "I take pleasure in making everything orderly, methodical, and precise.", trait: "Methodical & Structured" },
+                            { text: "I prefer spontaneous adaptation and go with the flow.", trait: "Flexible & Adaptive" }
+                        ]
+                    },
+                    {
+                        id: "per_2",
+                        text: "How do you handle high-pressure tense situations?",
+                        options: [
+                            { text: "I remain calm, logical, clear-headed, and step-by-step focused.", trait: "Calm Under Pressure" },
+                            { text: "I tend to feel overwhelmed and seek immediate emotional relief.", trait: "Emotionally Reactive" }
+                        ]
+                    }
+                ]
+            },
+            {
+                title: "Section 4: Aptitude & Problem Solving",
+                subtitle: "Select your preferred approach to challenges:",
+                questions: [
+                    {
+                        id: "apt_1",
+                        text: "When faced with a complex logistical puzzle, what is your approach?",
+                        options: [
+                            { text: "Break it down into mathematical formulas and logical modules.", level: "High Analytical" },
+                            { text: "Rely on intuitive guesswork and trial-and-error.", level: "Intuitive" }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        let currentStep = 0;
+        let userResponses = {};
+
+        function startAssessment() {
+            document.getElementById('welcome-screen').classList.remove('active');
+            document.getElementById('assessment-screen').classList.add('active');
+            renderStep();
+        }
+
+        function renderStep() {
+            const section = assessmentSections[currentStep];
+            document.getElementById('step-indicator').innerText = `Section ${currentStep + 1} of ${assessmentSections.length}: ${section.title}`;
+            
+            const progressPercent = ((currentStep + 1) / assessmentSections.length) * 100;
+            document.getElementById('progress-fill').style.width = `${progressPercent}%`;
+
+            let html = `<h3>${section.subtitle}</h3>`;
+            section.questions.forEach((q, qIndex) => {
+                html += `<div class="question-block">
+                    <h3>${qIndex + 1}. ${q.text}</h3>
+                    <div class="options-group">`;
+                q.options.forEach((opt, optIndex) => {
+                    const isChecked = userResponses[q.id] === optIndex ? 'checked' : '';
+                    html += `<label class="option-label">
+                        <input type="radio" name="${q.id}" value="${optIndex}" ${isChecked} onchange="saveResponse('${q.id}', ${optIndex})">
+                        ${opt.text}
+                    </label>`;
+                });
+                html += `</div></div>`;
+            });
+
+            document.getElementById('question-container').innerHTML = html;
+
+            document.getElementById('prev-btn').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+            document.getElementById('next-btn').innerText = currentStep === assessmentSections.length - 1 ? 'View Report' : 'Next Section';
+        }
+
+        function saveResponse(questionId, optionIndex) {
+            userResponses[questionId] = optionIndex;
+        }
+
+        function nextStep() {
+            const section = assessmentSections[currentStep];
+            for (let q of section.questions) {
+                if (userResponses[q.id] === undefined) {
+                    alert("Please select an option before proceeding.");
+                    return;
+                }
+            }
+
+            if (currentStep < assessmentSections.length - 1) {
+                currentStep++;
+                renderStep();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                generateReport();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderStep();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function generateReport() {
+            document.getElementById('assessment-screen').classList.remove('active');
+            document.getElementById('report-screen').classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const ctx = document.getElementById('orientationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Admin', 'Creative', 'Informative', 'People'],
+                    datasets: [{
+                        label: 'Orientation Score (%)',
+                        data: [85, 90, 75, 60],
+                        backgroundColor: ['#0F2C59', '#173B6B', '#E5C07B', '#64748B'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 }
+                    }
+                }
+            });
+
+            document.getElementById('interest-results-list').innerHTML = `
+                <div class="career-match-item"><h4>1. Education & Training (Score: 100%)</h4><p>If you love to teach, communicate effectively, and enhance the skills of others, this is your core domain.</p></div>
+                <div class="career-match-item"><h4>2. Mathematics & Statistics (Score: 95%)</h4><p>Strong sense of numbers, pattern recognition, and excellent analytical aptitude.</p></div>
+                <div class="career-match-item"><h4>3. Sales & Business Development (Score: 90%)</h4><p>Exceptional ability to listen, understand client requirements, and network with confidence.</p></div>
+            `;
+
+            document.getElementById('personality-match-box').innerHTML = `
+                <h4 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.1rem;">Personality Icon Match: Mr. Narayana Murthy</h4>
+                <p style="color: var(--text-main); font-size: 0.95rem;">You exhibit a methodical, disciplined, calm, and structured working style. You value traditional hard work, step-by-step reasoning, meticulous attention to detail, and operational precision.</p>
+            `;
+
+            document.getElementById('top-recommendations-list').innerHTML = `
+                <div class="career-match-item">
+                    <h4>1. Academic Lecturer / Professor</h4>
+                    <p>Design curriculum, mentor students at higher education levels, and lead educational research programs.</p>
+                </div>
+                <div class="career-match-item">
+                    <h4>2. Data Scientist & Statistical Analyst</h4>
+                    <p>Utilize advanced mathematical models and predictive algorithms to solve complex organizational challenges.</p>
+                </div>
+                <div class="career-match-item">
+                    <h4>3. Educational Technologist</h4>
+                    <p>Research and implement smart-learning tools and digital transformation strategies within academic institutions.</p>
+                </div>
+                <div class="career-match-item">
+                    <h4>4. Sales Engineer / Solutions Architect</h4>
+                    <p>Combine technical expertise with customer communication to pitch and deploy high-value enterprise solutions.</p>
+                </div>
+                <div class="career-match-item">
+                    <h4>5. Corporate Trainer & Skill Development Lead</h4>
+                    <p>Design professional training workshops and nurture executive talent development across corporate frameworks.</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
